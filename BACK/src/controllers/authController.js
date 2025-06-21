@@ -38,7 +38,14 @@ exports.login = async (req, res) => {
       return res.status(401).json({ error: 'Email ou senha inválidos' })
     }
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' })
-    res.json({ token, userId: user.id })
+    res.json({
+      token,
+      user: {
+        nome: user.name, // ou user.nome, conforme seu banco
+        email: user.email
+        // adicione outros campos se quiser
+      }
+    })
   } catch {
     res.status(500).json({ error: 'Erro no login' })
   }
