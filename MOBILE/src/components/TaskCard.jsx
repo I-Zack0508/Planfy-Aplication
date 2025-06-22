@@ -29,9 +29,9 @@ const TaskCard = ({ name, category, time, date, completed }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#ffffff",
     padding: 15,
-    marginVertical: 6,
+    marginVertical: 20,
     borderLeftWidth: 6,
     borderLeftColor: "#adb8c5",
     borderRadius: 6,

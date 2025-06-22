@@ -1,69 +1,101 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 
 const Semana = ({ onDateChange }) => {
   const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-  const today = new Date();
-  const todayIndex = today.getDay();
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(new Date().getDay());
 
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const newDate = new Date();
-    newDate.setDate(today.getDate() - todayIndex + i);
-    return {
-      label: days[i],
-      date: newDate.toISOString().slice(0, 10),
-      dayNumber: newDate.getDate(),
-    };
-  });
+  const baseDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + weekOffset * 7);
+    return date;
+  }, [weekOffset]);
 
-  const [selectedIndex, setSelectedIndex] = useState(todayIndex);
+  const weekDates = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const newDate = new Date(baseDate);
+      const currentDay = baseDate.getDay();
+      newDate.setDate(baseDate.getDate() - currentDay + i);
+      return {
+        label: days[i],
+        date: newDate.toISOString().slice(0, 10),
+        dayNumber: newDate.getDate(),
+        fullDate: newDate,
+      };
+    });
+  }, [baseDate]);
 
   useEffect(() => {
     if (onDateChange) {
       onDateChange(weekDates[selectedIndex].date);
     }
-  }, [selectedIndex]);
+  }, [selectedIndex, weekDates]);
+
+  const currentMonth = weekDates[0].fullDate.toLocaleString("pt-BR", {
+    month: "long",
+  });
+  const currentYear = weekDates[0].fullDate.getFullYear();
 
   return (
     <View style={[styles.container, styles.shadowBox]}>
-      <Text style={styles.title}>Hoje</Text>
-      <View style={styles.row}>
-        {weekDates.map((item, index) => {
-          const isToday = index === todayIndex;
-          const isSelected = index === selectedIndex;
-          return (
-            <TouchableOpacity
-              key={index}
-              style={styles.dayWrapper}
-              onPress={() => setSelectedIndex(index)}
-            >
-              <Text
-                style={[
-                  styles.dayLabel,
-                  (isToday || isSelected) && styles.dayLabelToday,
-                ]}
-              >
-                {item.label}
-              </Text>
-              <View
-                style={[
-                  styles.dayCircle,
-                  (isToday || isSelected) && styles.dayCircleToday,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.dayNumber,
-                    (isToday || isSelected) && styles.dayNumberToday,
-                  ]}
-                >
-                  {item.dayNumber}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+      <View style={styles.header}>
+        <Text style={styles.month}>{currentMonth}</Text>
+        <Text style={styles.year}>{currentYear}</Text>
       </View>
+
+     <View style={styles.rowWrapper}>
+  {/* ← seta anterior */}
+  <TouchableOpacity onPress={() => setWeekOffset(weekOffset - 1)}>
+    <Text style={styles.navArrow}>←</Text>
+  </TouchableOpacity>
+
+  {/* Dias da semana responsivos */}
+  <View style={styles.daysRow}>
+    {weekDates.map((item, index) => {
+      const isToday =
+        item.date === new Date().toISOString().slice(0, 10);
+      const isSelected = index === selectedIndex;
+      return (
+        <TouchableOpacity
+          key={index}
+          style={styles.dayWrapper}
+          onPress={() => setSelectedIndex(index)}
+        >
+          <Text
+            style={[
+              styles.dayLabel,
+              (isToday || isSelected) && styles.dayLabelToday,
+            ]}
+          >
+            {item.label}
+          </Text>
+          <View
+            style={[
+              styles.dayCircle,
+              (isToday || isSelected) && styles.dayCircleToday,
+            ]}
+          >
+            <Text
+              style={[
+                styles.dayNumber,
+                (isToday || isSelected) && styles.dayNumberToday,
+              ]}
+            >
+              {item.dayNumber}
+            </Text>
+          </View>
+        </TouchableOpacity>
+      );
+    })}
+  </View>
+
+  {/* → seta próxima */}
+  <TouchableOpacity onPress={() => setWeekOffset(weekOffset + 1)}>
+    <Text style={styles.navArrow}>→</Text>
+  </TouchableOpacity>
+</View>
+
     </View>
   );
 };
@@ -81,16 +113,34 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
   },
-  title: {
-    fontSize: 25,
-    fontWeight: "600",
-    marginBottom: 15,
-    color: "#000",
-  },
-  row: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 15,
+  },
+  month: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#2C2C2C",
+    textTransform: "capitalize",
+  },
+  year: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#2C2C2C",
+  },
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+  },
+  navArrow: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    paddingHorizontal: 6,
   },
   dayWrapper: {
     alignItems: "center",
@@ -126,6 +176,19 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
   },
+  rowWrapper: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+daysRow: {
+  flex: 1,
+  flexDirection: "row",
+  justifyContent: "space-around",
+  alignItems: "center",
+},
+
 });
 
 export default Semana;
