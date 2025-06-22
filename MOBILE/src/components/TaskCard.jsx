@@ -14,7 +14,7 @@ const TaskCard = ({ name, category, time, date, completed }) => {
       <View style={styles.cardHorizontal}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{name}</Text>
-          <Text style={styles.info}>Categoria: {category}</Text>
+          {/* <Text style={styles.info}>Categoria: {category}</Text> */}
           <Text style={styles.info}>Horário: {time}</Text>
           <Text style={styles.info}>Data: {dataFormatada}</Text>
           {completed && (

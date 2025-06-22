@@ -25,8 +25,8 @@ const TaskCreator = ({ onTaskAdded }) => {
     const date = `${year}-${monthStr}-${dayStr}`;
     const time = `${hourStr}:${minuteStr}`;
 
-    // Categoria padrão (ajuste se quiser)
-    const category = "pessoal";
+    // Categoria padrão
+    const category = "Mobile";
 
     // Recupera o token salvo no login
     const token = await AsyncStorage.getItem("token");
