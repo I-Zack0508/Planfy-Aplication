@@ -1,25 +1,43 @@
+import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { useState, useEffect } from "react";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Header from "../../../components/Header";
 import User from "../../../components/User";
 import InfoPerfil from "../../../components/InfoPerfil";
 import DesempenhoCard from '../../../components/DesempenhoCard';
 import { ScrollView } from "react-native-gesture-handler";
+import { useFocusEffect } from '@react-navigation/native';
+import { upDateLocalStorageUser } from "../../../services/upDateLocalStorage";
 
 
 export default function PerfilScreen() {
     const [user, setUser] = useState(null);
 
-    useEffect(() => {
-        async function fetchUser() {
-            const userData = await AsyncStorage.getItem('user');
-            if (userData && userData !== "undefined") {
-                setUser(JSON.parse(userData));
+    useFocusEffect(
+        React.useCallback(() => {
+            let intervalId;
+            let isActive = true;
+
+            async function syncUser() {
+                const token = await AsyncStorage.getItem('token');
+                if (token) {
+                    await upDateLocalStorageUser(token);
+                }
+                const userData = await AsyncStorage.getItem('user');
+                if (userData && userData !== "undefined" && isActive) {
+                    setUser(JSON.parse(userData));
+                }
             }
-        }
-        fetchUser();
-    }, []);
+
+            syncUser();
+            intervalId = setInterval(syncUser, 60000); // Atualiza a cada 1 minuto
+
+            return () => {
+                isActive = false;
+                clearInterval(intervalId);
+            };
+        }, [])
+    );
 
     if (!user) {
         return (
