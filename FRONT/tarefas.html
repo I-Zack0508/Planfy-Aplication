@@ -1074,11 +1074,15 @@
                 }
 
                 tasks.forEach(task => {
-                    const taskDateObj = new Date(task.date);
-                    let weekDay = taskDateObj.toLocaleDateString('pt-BR', { weekday: 'long' }).toLowerCase();
+                    // Pega só a parte da data (YYYY-MM-DD) sem converter para Date
+                    const [year, month, day] = task.date.slice(0, 10).split('-');
+                    const dataFormatada = `${day}/${month}/${year}`;
+
+                    // Para o dia da semana, cria um Date local ignorando o fuso
+                    const localDate = new Date(Number(year), Number(month) - 1, Number(day));
+                    let weekDay = localDate.toLocaleDateString('pt-BR', { weekday: 'long' }).toLowerCase();
                     weekDay = weekDay.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // remove acentos
                     const dayId = weekDayMap[weekDay];
-                    const dataFormatada = taskDateObj.toLocaleDateString('pt-BR');
 
                     const daySection = document.getElementById(dayId);
                     if (daySection) {
@@ -1086,9 +1090,9 @@
                         taskCard.className = "task-card";
                         const now = new Date();
                         const [h, m] = task.time.split(":");
-                        taskDateObj.setHours(Number(h), Number(m), 0, 0);
+                        localDate.setHours(Number(h), Number(m), 0, 0);
 
-                        let canComplete = !task.completed && now >= taskDateObj;
+                        let canComplete = !task.completed && now >= localDate;
                         let completedLabel = task.completed ? '<span style="color:green;font-weight:bold;">Concluída</span>' : '';
 
                         taskCard.innerHTML = `
