@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const Semana = ({ onDateChange }) => {
   const days = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -37,65 +38,76 @@ const Semana = ({ onDateChange }) => {
   });
   const currentYear = weekDates[0].fullDate.getFullYear();
 
+  const isCurrentWeek = weekOffset === 0;
+
+  const voltarHoje = () => {
+    setWeekOffset(0);
+    setSelectedIndex(new Date().getDay());
+  };
+
   return (
     <View style={[styles.container, styles.shadowBox]}>
       <View style={styles.header}>
         <Text style={styles.month}>{currentMonth}</Text>
+
+        <View style={styles.middleContainer}>
+          {!isCurrentWeek && (
+            <TouchableOpacity style={styles.botaoHoje} onPress={voltarHoje}>
+              <Text style={styles.textoHoje}>Hoje</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
         <Text style={styles.year}>{currentYear}</Text>
       </View>
 
-     <View style={styles.rowWrapper}>
-  {/* ← seta anterior */}
-  <TouchableOpacity onPress={() => setWeekOffset(weekOffset - 1)}>
-    <Text style={styles.navArrow}>←</Text>
-  </TouchableOpacity>
-
-  {/* Dias da semana responsivos */}
-  <View style={styles.daysRow}>
-    {weekDates.map((item, index) => {
-      const isToday =
-        item.date === new Date().toISOString().slice(0, 10);
-      const isSelected = index === selectedIndex;
-      return (
-        <TouchableOpacity
-          key={index}
-          style={styles.dayWrapper}
-          onPress={() => setSelectedIndex(index)}
-        >
-          <Text
-            style={[
-              styles.dayLabel,
-              (isToday || isSelected) && styles.dayLabelToday,
-            ]}
-          >
-            {item.label}
-          </Text>
-          <View
-            style={[
-              styles.dayCircle,
-              (isToday || isSelected) && styles.dayCircleToday,
-            ]}
-          >
-            <Text
-              style={[
-                styles.dayNumber,
-                (isToday || isSelected) && styles.dayNumberToday,
-              ]}
-            >
-              {item.dayNumber}
-            </Text>
-          </View>
+      <View style={styles.rowWrapper}>
+        <TouchableOpacity onPress={() => setWeekOffset(weekOffset - 1)}>
+          <MaterialIcons name="arrow-back-ios" size={28} color="#333" />
         </TouchableOpacity>
-      );
-    })}
-  </View>
 
-  {/* → seta próxima */}
-  <TouchableOpacity onPress={() => setWeekOffset(weekOffset + 1)}>
-    <Text style={styles.navArrow}>→</Text>
-  </TouchableOpacity>
-</View>
+        <View style={styles.daysRow}>
+          {weekDates.map((item, index) => {
+            const isToday = item.date === new Date().toISOString().slice(0, 10);
+            const isSelected = index === selectedIndex;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={styles.dayWrapper}
+                onPress={() => setSelectedIndex(index)}
+              >
+                <Text
+                  style={[
+                    styles.dayLabel,
+                    (isToday || isSelected) && styles.dayLabelToday,
+                  ]}
+                >
+                  {item.label}
+                </Text>
+                <View
+                  style={[
+                    styles.dayCircle,
+                    (isToday || isSelected) && styles.dayCircleToday,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dayNumber,
+                      (isToday || isSelected) && styles.dayNumberToday,
+                    ]}
+                  >
+                    {item.dayNumber}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
+        <TouchableOpacity onPress={() => setWeekOffset(weekOffset + 1)}>
+          <MaterialIcons name="arrow-forward-ios" size={28} color="#333" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -115,9 +127,14 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-between", // mês à esquerda e ano à direita
     alignItems: "center",
     marginBottom: 15,
+    paddingHorizontal: 10,
+  },
+  middleContainer: {
+    flex: 1,
+    alignItems: "center",
   },
   month: {
     fontSize: 20,
@@ -130,17 +147,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#2C2C2C",
   },
-  row: {
+  botaoHoje: {
+    backgroundColor: "#718EAD",
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  textoHoje: {
+    color: "#FFF",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  rowWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
+    justifyContent: "space-between",
   },
-  navArrow: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    paddingHorizontal: 6,
+  daysRow: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
   },
   dayWrapper: {
     alignItems: "center",
@@ -176,19 +203,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontWeight: "bold",
   },
-  rowWrapper: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
-
-daysRow: {
-  flex: 1,
-  flexDirection: "row",
-  justifyContent: "space-around",
-  alignItems: "center",
-},
-
 });
 
 export default Semana;
