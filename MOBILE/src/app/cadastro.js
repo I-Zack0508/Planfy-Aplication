@@ -19,12 +19,6 @@ export default function Cadastro() {
           <CriarLogin/>
         </View>
 
-        <View style={styles.bordaContainer2}>
-          <Image
-            style={styles.borda4}
-            source={require("../../assets/bordas4.png")} />
-        </View>
-
         <StatusBar style="auto" />
       </View>
     </ScrollView>
@@ -39,6 +33,8 @@ const styles = StyleSheet.create({
   login: {
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    top: 100,
   },
   bordaContainer: {
     marginTop: -60,

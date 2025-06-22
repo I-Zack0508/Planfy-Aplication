@@ -41,9 +41,9 @@ exports.login = async (req, res) => {
     res.json({
       token,
       user: {
-        nome: user.name, // ou user.nome, conforme seu banco
-        email: user.email
-        // adicione outros campos se quiser
+        nome: user.name,
+        email: user.email,
+        profilePic: user.profilePic
       }
     })
   } catch {

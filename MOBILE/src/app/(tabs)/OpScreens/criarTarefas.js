@@ -3,23 +3,42 @@ import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import { Image } from 'expo-image'
 import TaskCreator from '../../../components/CrieTask';
 import 'react-native-gesture-handler';
+import Header from '../../../components/Header';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function TarefasScreen() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const userData = await AsyncStorage.getItem('user');
+      if (userData && userData !== "undefined") {
+        setUser(JSON.parse(userData));
+      }
+    }
+    fetchUser();
+  }, []);
+
+  if (!user) {
+    return (
+      <ScrollView>
+        <Header />
+        <View style={styles.container}>
+          <Text>Carregando perfil...</Text>
+        </View>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView>
+      <Header profilePic={user.profilePic}/>
       <View style={styles.container}>
-
-        <View style={styles.bordaContainer}>
-          <Image
-            style={styles.borda2}
-            source={require("../../../../assets/bordas2.png")} />
-        </View>
 
         <View style={styles.task}>
           <TaskCreator/>
         </View>
-
         <StatusBar style="auto" />
       </View>
     </ScrollView>
@@ -44,5 +63,4 @@ const styles = StyleSheet.create({
     paddingTop:810,
     position: 'fixed'
   },
-
 });

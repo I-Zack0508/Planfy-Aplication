@@ -12,17 +12,11 @@ export default function Logar() {
         <View style={styles.bordaContainer}>
           <Image
             style={styles.borda2}
-            source={require("../../assets/bordas2.png")} /> 
+            source={require("../../assets/bordas2.png")} />
         </View>
 
         <View style={styles.login}>
           <Login />
-        </View>
-
-        <View style={styles.bordaContainer2}>
-          <Image
-            style={styles.borda4}
-            source={require("../../assets/bordas4.png")} />
         </View>
 
         <StatusBar style="auto" />
@@ -39,6 +33,8 @@ const styles = StyleSheet.create({
   login: {
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    top: 80,
   },
   bordaContainer: {
     marginTop: -60,
@@ -63,7 +59,7 @@ const styles = StyleSheet.create({
     height: 130
   },
   adc: {
-    paddingTop:810,
+    paddingTop: 810,
     position: 'fixed'
   },
 

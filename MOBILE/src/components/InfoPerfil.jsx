@@ -59,14 +59,7 @@ export default function InfoPerfil() {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.item}>
-                    <Text style={styles.text}>
-                        <Text style={styles.bold}>Senha:</Text> ********
-                    </Text>
-                    <TouchableOpacity onPress={() => handleEdit("Senha", "")}>
-                        <Text style={styles.edit}>Editar</Text>
-                    </TouchableOpacity>
-                </View>
+       
 
                 <View style={styles.item}>
                     <Text style={styles.text}>
@@ -77,6 +70,15 @@ export default function InfoPerfil() {
                     </TouchableOpacity>
                 </View>
             </View>
+
+                     <View style={styles.item}>
+                    <Text style={styles.text}>
+                        <Text style={styles.bold}>Senha:</Text> ********
+                    </Text>
+                    <TouchableOpacity onPress={() => handleEdit("Senha", "")}>
+                        <Text style={styles.edit}>Editar</Text>
+                    </TouchableOpacity>
+                </View>
 
             <TouchableOpacity style={styles.exit} onPress={() => setLogoutConfirmVisible(true)}>
                 <Text style={[styles.textExit, styles.bold]}>Sair da Conta</Text>

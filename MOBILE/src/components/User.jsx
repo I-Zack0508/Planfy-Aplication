@@ -1,12 +1,22 @@
 import { StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
 
-export default function User() {
+export default function User({ profilePic }) {
+    let profilePicUrl = null;
+    if (profilePic) {
+        // Troque 'localhost' pelo IP do seu PC se estiver testando no celular físico
+        profilePicUrl = `http://localhost:3000${profilePic}`;
+    }
+
     return (
         <View style={styles.container}>
             <Image 
-            style={styles.foto}
-            source={require('../../assets/User.png')}
+                style={styles.foto}
+                source={
+                    profilePicUrl
+                        ? { uri: profilePicUrl }
+                        : require('../../assets/User.png')
+                }
             />
         </View>
     )
@@ -23,6 +33,5 @@ const styles = StyleSheet.create({
         width:  125,
         height: 125,
         borderRadius: 100,
-        boxShadow: '1px 1px 6px black',
     },
 })

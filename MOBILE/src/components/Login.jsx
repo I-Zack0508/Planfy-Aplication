@@ -48,14 +48,6 @@ export default function Login() {
                     <Pressable style={styles.botaoLogar} onPress={handleLogin}>
                         <Text style={styles.textBotao}>Logar</Text>
                     </Pressable>
-                    <View style={styles.containerGoogle}>
-                        <Link href={'/OpScreens'}>
-                            <Image
-                                style={styles.loginGoogle}
-                                source={require("../../assets/google.png")}
-                            />
-                        </Link>
-                    </View>
                     <Text style={styles.textCriar}>Caso ainda não tenha uma conta
                         <Link style={styles.criarConta} href={'/cadastro'}> Crie uma conta</Link>
                     </Text>

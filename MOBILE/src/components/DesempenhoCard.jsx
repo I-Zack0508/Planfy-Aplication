@@ -50,15 +50,12 @@ const DesempenhoCard = ({ dados = {} }) => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 16,
     margin: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
+    boxShadow: '1px 2px 6px #999999',
+    width: '85%',
   },
   header: {
     fontSize: 18,
