@@ -27,7 +27,7 @@
                 <li><a href="./tarefas.html">Tarefas</a></li>
             </ul>
         </nav>
-        <div class="menu-toggle" onclick="toggleMenu()">
+        <div class="menu-toggle" id="menu-toggle">
             <i class="fa-solid fa-bars fa-lg"></i>
         </div>
 
@@ -41,8 +41,9 @@
 
     </header>
 
+    <!-- Banner de boas-vindas -->
     <div class="container">
-        <div class="planfy-logo">PLANFY</div>
+        <div class="planfy-logo" id="banner-ola"></div>
     </div>
 
     <div>
@@ -135,5 +136,72 @@
         }
     </style>
 
+<script src="Js/Welcome.js"></script>
 <script src="Js/photoLoad.js"></script>
+<script src="Js/Header.js"></script>
+
+<!-- SCRIPTS NO FINAL DO BODY -->
+<script>
+    // Menu hamburguer responsivo
+    document.addEventListener('DOMContentLoaded', function () {
+        // Hambúrguer
+        const menuToggle = document.getElementById('menu-toggle');
+        const navHeader = document.querySelector('.nav-header');
+        if (menuToggle && navHeader) {
+            menuToggle.addEventListener('click', function () {
+                navHeader.classList.toggle('active');
+            });
+        }
+
+        // Mensagem de boas-vindas
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                if (user.nome) {
+                    const firstName = user.nome.split(' ')[0];
+                    const banner = document.getElementById('banner-ola');
+                    if (banner) {
+                        banner.textContent = `Olá ${firstName}`;
+                    }
+                }
+                // Foto de perfil dinâmica
+                if (user.profilePic) {
+                    const img = document.getElementById('header-profile-image');
+                    if (img) {
+                        img.src = user.profilePic.startsWith('http')
+                            ? user.profilePic
+                            : `http://localhost:3000${user.profilePic}`;
+                    }
+                }
+            } catch (e) {
+                // Se der erro, não faz nada
+            }
+        }
+    });
+</script>
+
+<!-- CSS mínimo para menu responsivo (adicione em <style> ou no seu CSS externo) -->
+<style>
+@media (max-width: 768px) {
+    .nav-header {
+        display: none;
+    }
+    .nav-header.active {
+        display: block;
+    }
+    .menu-toggle {
+        display: block;
+    }
+}
+@media (min-width: 769px) {
+    .nav-header {
+        display: block;
+    }
+    .menu-toggle {
+        display: none;
+    }
+}
+</style>
 </body>
+</html>

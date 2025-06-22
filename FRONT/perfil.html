@@ -25,10 +25,9 @@
                 <li><a href="tarefas.html">Tarefas</a></li>
             </ul>
         </nav>
-        <div class="menu-toggle" onclick="toggleMenu()">
+        <div class="menu-toggle" id="menu-toggle">
             <i class="fa-solid fa-bars fa-lg"></i>
         </div>
-
         <div class="creation_noShow"><i class="fa-solid fa-plus fa-lg"></i></div>
 
         <a href="perfil.html">
@@ -1515,6 +1514,37 @@
             }
         });
     </script>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Menu hamburguer responsivo
+    const menuToggle = document.getElementById('menu-toggle');
+    const navHeader = document.querySelector('.nav-header');
+    if (menuToggle && navHeader) {
+        menuToggle.addEventListener('click', function () {
+            navHeader.classList.toggle('active');
+        });
+    }
+
+    // Foto de perfil dinâmica
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+        try {
+            const user = JSON.parse(userStr);
+            if (user.profilePic) {
+                const img = document.getElementById('header-profile-image');
+                if (img) {
+                    img.src = user.profilePic.startsWith('http')
+                        ? user.profilePic
+                        : `http://localhost:3000${user.profilePic}`;
+                }
+            }
+        } catch (e) {
+            // Se der erro, não faz nada
+        }
+    }
+});
+</script>
 
 </body>
 

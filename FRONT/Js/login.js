@@ -25,9 +25,14 @@ async function validateForm(event) {
         const data = await response.json();
         localStorage.setItem("token", data.token); // Guarda o token no navegador
 
+        // Salva o usuário no localStorage (se o backend retornar o usuário)
+        if (data.user) {
+            localStorage.setItem("user", JSON.stringify(data.user));
+        }
+
         // Aguarda 1 segundo antes de redirecionar
         setTimeout(() => {
-            window.location.href = "index.html"; // Redireciona para a página de perfil
+            window.location.href = "index.html";
         }, 1000);
     } catch (error) {
         console.error("Erro ao fazer login:", error);

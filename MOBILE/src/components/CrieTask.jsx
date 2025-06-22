@@ -1,34 +1,62 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const TaskCreator = () => {
+const TaskCreator = ({ onTaskAdded }) => {
   const [taskName, setTaskName] = useState("");
-  const [selectedDays, setSelectedDays] = useState([]);
-  const [time, setTime] = useState("");
-  const [repeatTask, setRepeatTask] = useState(false);
+  const [day, setDay] = useState("");
+  const [month, setMonth] = useState("");
+  const [year, setYear] = useState("");
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("");
 
-  const days = ["D", "S", "T", "Q", "Q", "S", "S"];
-
-  const toggleDay = (index) => {
-    setSelectedDays((prev) =>
-      prev.includes(index) ? prev.filter((d) => d !== index) : [...prev, index]
-    );
-  };
-
-  const addTask = () => {
-    if (!taskName || !time || selectedDays.length === 0) {
-      alert("Preencha todos os campos!");
+  const addTask = async () => {
+    if (!taskName || !day || !month || !year || !hour || !minute) {
+      Alert.alert("Preencha todos os campos!");
       return;
     }
 
-    const newTask = {
-      name: taskName,
-      days: selectedDays,
-      time: time,
-      repeat: repeatTask,
-    };
+    const dayStr = day.padStart(2, "0");
+    const monthStr = month.padStart(2, "0");
+    const hourStr = hour.padStart(2, "0");
+    const minuteStr = minute.padStart(2, "0");
 
-    console.log("Tarefa adicionada:", newTask);
+    // O backend espera date (YYYY-MM-DD) e time (HH:mm)
+    const date = `${year}-${monthStr}-${dayStr}`;
+    const time = `${hourStr}:${minuteStr}`;
+
+    // Categoria padrão (ajuste se quiser)
+    const category = "pessoal";
+
+    // Recupera o token salvo no login
+    const token = await AsyncStorage.getItem("token");
+
+    try {
+      const response = await fetch("http://localhost:3000/api/tasks", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: taskName,
+          date,
+          time,
+          category,
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert("Tarefa adicionada!");
+        setTaskName(""); setDay(""); setMonth(""); setYear(""); setHour(""); setMinute("");
+        if (onTaskAdded) onTaskAdded();
+      } else {
+        const data = await response.json();
+        Alert.alert("Erro ao adicionar tarefa", data.error || "Erro desconhecido");
+      }
+    } catch (e) {
+      Alert.alert("Erro de conexão com o servidor!");
+    }
   };
 
   return (
@@ -37,39 +65,57 @@ const TaskCreator = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Nomeie a tarefa"
+        placeholder="Nome da tarefa"
         value={taskName}
         onChangeText={setTaskName}
       />
 
-      <View style={styles.daysContainer}>
-        {days.map((day, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.day, selectedDays.includes(index) && styles.selectedDay]}
-            onPress={() => toggleDay(index)}
-          >
-            <Text style={styles.dayText}>{day}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Defina a hora"
-        value={time}
-        onChangeText={setTime}
-      />
-
-      <View style={styles.card}>
-        <Text style={styles.cardText}>Repetir a tarefa?</Text>
-        <TouchableOpacity
-          style={[styles.checkbox, repeatTask && styles.checkedBox]}
-          onPress={() => setRepeatTask(!repeatTask)}
+      <View style={styles.row}>
+        <TextInput
+          style={[styles.input, styles.smallInput]}
+          placeholder="Dia"
+          value={day}
+          onChangeText={setDay}
+          keyboardType="numeric"
+          maxLength={2}
+        />
+        <TextInput
+          style={[styles.input, styles.smallInput]}
+          placeholder="Mês"
+          value={month}
+          onChangeText={setMonth}
+          keyboardType="numeric"
+          maxLength={2}
+        />
+        <TextInput
+          style={[styles.input, styles.smallInput]}
+          placeholder="Ano"
+          value={year}
+          onChangeText={setYear}
+          keyboardType="numeric"
+          maxLength={4}
         />
       </View>
 
-      {/* Botão "Adicionar tarefa" */}
+      <View style={styles.row}>
+        <TextInput
+          style={[styles.input, styles.smallInput]}
+          placeholder="Hora"
+          value={hour}
+          onChangeText={setHour}
+          keyboardType="numeric"
+          maxLength={2}
+        />
+        <TextInput
+          style={[styles.input, styles.smallInput]}
+          placeholder="Minutos"
+          value={minute}
+          onChangeText={setMinute}
+          keyboardType="numeric"
+          maxLength={2}
+        />
+      </View>
+
       <TouchableOpacity style={styles.addButton} onPress={addTask}>
         <Text style={styles.addButtonText}>Adicionar tarefa</Text>
       </TouchableOpacity>
@@ -78,25 +124,47 @@ const TaskCreator = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
-  input: { borderWidth: 1, borderColor: "#ffffff", backgroundColor: "#ffffff", padding: 15, borderRadius: 50, marginBottom: 20 },
-  daysContainer: { flexDirection: "row", justifyContent: "center", marginBottom: 20, backgroundColor: "#ffffff", padding: 1.5, borderRadius: 50 },
-  day: { padding: 10, margin: 5, borderRadius: 20, backgroundColor: "#ffffff" },
-  selectedDay: { backgroundColor: "#6381A8" },
-  dayText: { color: "black", fontWeight: "bold" },
-  card: { backgroundColor: "#ffffff", flexDirection: "row", alignItems: "center", padding: 15, borderWidth: 0, borderRadius: 50 },
-  cardText: { flex: 1, fontSize: 16 },
-  checkbox: { width: 20, height: 20, borderWidth: 2, borderRadius: 5 },
-  checkedBox: { backgroundColor: "#6381A8" },
-
-  // Estilos do botão "Adicionar tarefa"
-  addButton: { backgroundColor: "#6381A8", padding: 15, borderRadius: 8, marginTop: 20, alignItems: "center" },
-  addButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-
-  bold: {
-    fontWeight: 'bold', // Indicações em negrito
+  container: { 
+    padding: 20, 
+    backgroundColor: "#fff", 
+    borderRadius: 16, 
+    margin: 16,
+    alignSelf: "center",
+    width: "90%",
+    elevation: 2,
   },
+  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
+  input: { 
+    borderWidth: 1, 
+    borderColor: "#ffffff", 
+    backgroundColor: "#f2f2f2", 
+    padding: 10, 
+    borderRadius: 30, 
+    marginBottom: 25, 
+    textAlign: "center",
+    fontSize: 14,
+    width: "100%",
+  },
+  smallInput: { 
+    flex: 1, // faz ocupar o espaço disponível
+    marginHorizontal: 5, 
+    marginBottom: 0,
+    padding: 10,
+    borderRadius: 20,
+    fontSize: 15,
+    minWidth: 0, // evita overflow
+    width: undefined, // remove largura fixa
+  },
+  row: { 
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    alignItems: "center", 
+    marginBottom: 25,
+    width: "100%",
+    gap: 8, // se suportado, para espaçamento entre inputs
+  },
+  addButton: { backgroundColor: "#6381A8", padding: 12, borderRadius: 8, marginTop: 15, alignItems: "center" },
+  addButtonText: { color: "white", fontSize: 15, fontWeight: "bold" },
 });
 
 export default TaskCreator;

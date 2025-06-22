@@ -50,6 +50,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f2f2f2',
   },
+
+  task: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    margin: 20,
+    marginTop: 150,
+  },
+
   bordaContainer: {
     marginTop: -60,
     paddingBottom: 0,
