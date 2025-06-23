@@ -1,27 +1,38 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const TaskCard = ({ name, category, time, date, completed }) => {
-  // Formata data para DD/MM/YYYY
-  let dataFormatada = "";
-  if (date) {
-    const [year, month, day] = date.slice(0, 10).split("-");
-    dataFormatada = `${day}/${month}/${year}`;
-  }
+const TaskCard = ({ id, name, category, time, date, completed, onEdit, onDelete, onToggleComplete }) => {
+  const [year, month, day] = date.slice(0, 10).split("-");
+  const dataFormatada = `${day}/${month}/${year}`;
+
+  const now = new Date();
+  const taskDateTime = new Date(`${date.slice(0, 10)}T${time}`);
+  const podeConcluir = !completed && now >= taskDateTime;
 
   return (
     <View style={[styles.card, completed && styles.completedCard]}>
       <View style={styles.cardHorizontal}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{name}</Text>
-          {/* <Text style={styles.info}>Categoria: {category}</Text> */}
           <Text style={styles.info}>Horário: {time}</Text>
           <Text style={styles.info}>Data: {dataFormatada}</Text>
-          {completed && (
-            <Text style={styles.completedLabel}>Concluída</Text>
+          {completed && <Text style={styles.completedLabel}>Concluída</Text>}
+        </View>
+
+        <View style={styles.buttons}>
+          <TouchableOpacity onPress={onEdit}>
+            <MaterialIcons name="edit" size={24} color="#0a84ff" />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={onDelete}>
+            <MaterialIcons name="delete" size={24} color="#ff3b30" />
+          </TouchableOpacity>
+          {podeConcluir && (
+            <TouchableOpacity onPress={onToggleComplete}>
+              <MaterialIcons name="check-circle" size={24} color="#34c759" />
+            </TouchableOpacity>
           )}
         </View>
-        {/* Aqui você pode adicionar botões de editar/excluir se quiser */}
       </View>
     </View>
   );
@@ -45,7 +56,6 @@ const styles = StyleSheet.create({
   },
   cardHorizontal: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
   },
   title: {
@@ -64,6 +74,11 @@ const styles = StyleSheet.create({
     color: "green",
     fontWeight: "bold",
     marginTop: 4,
+  },
+  buttons: {
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
   },
 });
 

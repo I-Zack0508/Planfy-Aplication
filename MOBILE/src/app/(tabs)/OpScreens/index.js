@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Modal, TextInput, Button, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Semana from '../../../components/Semana';
@@ -10,6 +10,8 @@ export default function HomeScreen() {
   const [user, setUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editTaskData, setEditTaskData] = useState({});
 
   useEffect(() => {
     const init = async () => {
@@ -27,29 +29,67 @@ export default function HomeScreen() {
     try {
       const response = await fetch("http://localhost:3000/api/tasks", {
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`,
         },
       });
       if (response.ok) {
-        const tasksArr = await response.json();
-        setTasks(tasksArr);
+        setTasks(await response.json());
       }
     } catch (e) {
       console.error("Erro ao buscar tarefas:", e);
     }
   };
 
-  if (!user) {
-    return (
-      <ScrollView>
-        <Header />
-        <View style={styles.container}>
-          <Text>Carregando perfil...</Text>
-        </View>
-      </ScrollView>
-    );
-  }
+  const handleToggleComplete = async (taskId) => {
+    const token = await AsyncStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:3000/api/tasks/${taskId}/complete`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) fetchTasks();
+    } catch (err) {
+      console.error("Erro ao concluir tarefa:", err);
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    const token = await AsyncStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:3000/api/tasks/${taskId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) fetchTasks();
+    } catch (err) {
+      console.error("Erro ao excluir tarefa:", err);
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditTaskData(task);
+    setEditModalVisible(true);
+  };
+
+  const handleSaveEdit = async () => {
+    const token = await AsyncStorage.getItem("token");
+    try {
+      const response = await fetch(`http://localhost:3000/api/tasks/${editTaskData.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(editTaskData),
+      });
+      if (response.ok) {
+        setEditModalVisible(false);
+        fetchTasks();
+      }
+    } catch (err) {
+      console.error("Erro ao editar tarefa:", err);
+    }
+  };
 
   const filteredTasks = tasks
     .filter(t => t.date?.slice(0, 10) === selectedDate)
@@ -70,12 +110,11 @@ export default function HomeScreen() {
             ) : (
               filteredTasks.map(task => (
                 <TaskCard
-                  key={task.id || task._id}
-                  name={task.name}
-                  category={task.category}
-                  time={task.time}
-                  date={task.date}
-                  completed={task.completed}
+                  key={task.id}
+                  {...task}
+                  onToggleComplete={() => handleToggleComplete(task.id)}
+                  onDelete={() => handleDeleteTask(task.id)}
+                  onEdit={() => handleEditTask(task)}
                 />
               ))
             )
@@ -85,6 +124,33 @@ export default function HomeScreen() {
             </Text>
           )}
         </View>
+
+        {/* Modal de Edição */}
+        <Modal visible={editModalVisible} animationType="slide">
+          <View style={{ padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Editar Tarefa</Text>
+            <TextInput
+              style={styles.input}
+              value={editTaskData.name}
+              onChangeText={(text) => setEditTaskData({ ...editTaskData, name: text })}
+              placeholder="Nome"
+            />
+            <TextInput
+              style={styles.input}
+              value={editTaskData.time}
+              onChangeText={(text) => setEditTaskData({ ...editTaskData, time: text })}
+              placeholder="Horário (HH:MM)"
+            />
+            <TextInput
+              style={styles.input}
+              value={editTaskData.date?.slice(0, 10)}
+              onChangeText={(text) => setEditTaskData({ ...editTaskData, date: text + "T00:00:00" })}
+              placeholder="Data (AAAA-MM-DD)"
+            />
+            <Button title="Salvar" onPress={handleSaveEdit} />
+            <Button title="Cancelar" onPress={() => setEditModalVisible(false)} />
+          </View>
+        </Modal>
 
         <StatusBar style="auto" />
       </View>
@@ -98,22 +164,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F3F3',
     width: '100%'
   },
-  footer: {
-    width: "100%",
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'absolute',
-    bottom: 0,
+  input: {
+    borderColor: "#ccc",
+    borderWidth: 1,
+    padding: 10,
+    marginVertical: 10,
+    borderRadius: 6,
   },
-  borda: {
-    marginLeft: '-20px',
-    width: 130,
-    height: 130
-  },
-  foto: {
-    marginTop: 580
-  },
-  button: {
-    margin: 15
-  }
 });

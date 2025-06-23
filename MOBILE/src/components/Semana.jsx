@@ -13,14 +13,23 @@ const Semana = ({ onDateChange }) => {
     return date;
   }, [weekOffset]);
 
+  const formatToYMD = (date) => {
+    return date
+      .toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) // força timezone BR
+      .split("/")
+      .reverse()
+      .join("-");
+  };
+
   const weekDates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const newDate = new Date(baseDate);
       const currentDay = baseDate.getDay();
       newDate.setDate(baseDate.getDate() - currentDay + i);
+
       return {
         label: days[i],
-        date: newDate.toISOString().slice(0, 10),
+        date: formatToYMD(newDate), // ✅ usa local date corrigido
         dayNumber: newDate.getDate(),
         fullDate: newDate,
       };
@@ -37,13 +46,15 @@ const Semana = ({ onDateChange }) => {
     month: "long",
   });
   const currentYear = weekDates[0].fullDate.getFullYear();
-
   const isCurrentWeek = weekOffset === 0;
 
   const voltarHoje = () => {
     setWeekOffset(0);
     setSelectedIndex(new Date().getDay());
   };
+
+  // Hoje formatado no mesmo estilo
+  const hoje = formatToYMD(new Date());
 
   return (
     <View style={[styles.container, styles.shadowBox]}>
@@ -68,8 +79,9 @@ const Semana = ({ onDateChange }) => {
 
         <View style={styles.daysRow}>
           {weekDates.map((item, index) => {
-            const isToday = item.date === new Date().toISOString().slice(0, 10);
+            const isToday = item.date === hoje;
             const isSelected = index === selectedIndex;
+
             return (
               <TouchableOpacity
                 key={index}
@@ -127,7 +139,7 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between", // mês à esquerda e ano à direita
+    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 15,
     paddingHorizontal: 10,
