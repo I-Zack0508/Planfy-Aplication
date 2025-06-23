@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, Modal, TextInput, Button, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, Modal, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Semana from '../../../components/Semana';
@@ -11,7 +11,17 @@ export default function HomeScreen() {
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [editTaskData, setEditTaskData] = useState({});
+
+  // Estados separados pra editar data/hora igual TaskCreator
+  const [editTaskData, setEditTaskData] = useState({
+    id: null,
+    name: "",
+    day: "",
+    month: "",
+    year: "",
+    hour: "",
+    minute: "",
+  });
 
   useEffect(() => {
     const init = async () => {
@@ -28,9 +38,7 @@ export default function HomeScreen() {
     const token = await AsyncStorage.getItem("token");
     try {
       const response = await fetch("http://localhost:3000/api/tasks", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
         setTasks(await response.json());
@@ -67,27 +75,59 @@ export default function HomeScreen() {
   };
 
   const handleEditTask = (task) => {
-    setEditTaskData(task);
+    // Quebra data e hora para preencher os inputs separados
+    const [year, month, day] = task.date.slice(0, 10).split("-");
+    const [hour, minute] = task.time.split(":");
+
+    setEditTaskData({
+      id: task.id,
+      name: task.name,
+      day,
+      month,
+      year,
+      hour,
+      minute,
+    });
     setEditModalVisible(true);
   };
 
   const handleSaveEdit = async () => {
+    const { id, name, day, month, year, hour, minute } = editTaskData;
+
+    if (!name || !day || !month || !year || !hour || !minute) {
+      Alert.alert("Preencha todos os campos!");
+      return;
+    }
+
+    const dayStr = day.padStart(2, "0");
+    const monthStr = month.padStart(2, "0");
+    const hourStr = hour.padStart(2, "0");
+    const minuteStr = minute.padStart(2, "0");
+
+    const date = `${year}-${monthStr}-${dayStr}`;
+    const time = `${hourStr}:${minuteStr}`;
+
     const token = await AsyncStorage.getItem("token");
+
     try {
-      const response = await fetch(`http://localhost:3000/api/tasks/${editTaskData.id}`, {
+      const response = await fetch(`http://localhost:3000/api/tasks/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(editTaskData),
+        body: JSON.stringify({ name, date, time }),
       });
+
       if (response.ok) {
         setEditModalVisible(false);
         fetchTasks();
+      } else {
+        Alert.alert("Erro ao salvar a tarefa");
       }
     } catch (err) {
       console.error("Erro ao editar tarefa:", err);
+      Alert.alert("Erro na conexão com o servidor");
     }
   };
 
@@ -126,29 +166,83 @@ export default function HomeScreen() {
         </View>
 
         {/* Modal de Edição */}
-        <Modal visible={editModalVisible} animationType="slide">
-          <View style={{ padding: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold" }}>Editar Tarefa</Text>
-            <TextInput
-              style={styles.input}
-              value={editTaskData.name}
-              onChangeText={(text) => setEditTaskData({ ...editTaskData, name: text })}
-              placeholder="Nome"
-            />
-            <TextInput
-              style={styles.input}
-              value={editTaskData.time}
-              onChangeText={(text) => setEditTaskData({ ...editTaskData, time: text })}
-              placeholder="Horário (HH:MM)"
-            />
-            <TextInput
-              style={styles.input}
-              value={editTaskData.date?.slice(0, 10)}
-              onChangeText={(text) => setEditTaskData({ ...editTaskData, date: text + "T00:00:00" })}
-              placeholder="Data (AAAA-MM-DD)"
-            />
-            <Button title="Salvar" onPress={handleSaveEdit} />
-            <Button title="Cancelar" onPress={() => setEditModalVisible(false)} />
+        <Modal
+          animationType="none"
+          transparent={true}
+          visible={editModalVisible}
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={[styles.modalTitle, styles.bold]}>Editar Tarefa</Text>
+
+              <TextInput
+                style={styles.modalInput}
+                value={editTaskData.name}
+                onChangeText={(text) => setEditTaskData({ ...editTaskData, name: text })}
+                placeholder="Nome da tarefa"
+              />
+
+              {/* Data inputs em linha, igual no TaskCreator */}
+              <View style={styles.row}>
+                <TextInput
+                  style={[styles.modalInput, styles.smallInput]}
+                  placeholder="Dia"
+                  value={editTaskData.day}
+                  onChangeText={(text) => setEditTaskData({ ...editTaskData, day: text })}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                <TextInput
+                  style={[styles.modalInput, styles.smallInput]}
+                  placeholder="Mês"
+                  value={editTaskData.month}
+                  onChangeText={(text) => setEditTaskData({ ...editTaskData, month: text })}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                <TextInput
+                  style={[styles.modalInput, styles.smallInput]}
+                  placeholder="Ano"
+                  value={editTaskData.year}
+                  onChangeText={(text) => setEditTaskData({ ...editTaskData, year: text })}
+                  keyboardType="numeric"
+                  maxLength={4}
+                />
+              </View>
+
+              {/* Hora inputs em linha */}
+              <View style={styles.row}>
+                <TextInput
+                  style={[styles.modalInput, styles.smallInput]}
+                  placeholder="Hora"
+                  value={editTaskData.hour}
+                  onChangeText={(text) => setEditTaskData({ ...editTaskData, hour: text })}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                <TextInput
+                  style={[styles.modalInput, styles.smallInput]}
+                  placeholder="Minutos"
+                  value={editTaskData.minute}
+                  onChangeText={(text) => setEditTaskData({ ...editTaskData, minute: text })}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity style={styles.modalButton} onPress={handleSaveEdit}>
+                  <Text style={styles.modalButtonText}>Salvar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setEditModalVisible(false)}
+                >
+                  <Text style={styles.modalButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
         </Modal>
 
@@ -162,13 +256,78 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F3F3',
-    width: '100%'
+    width: '100%',
   },
-  input: {
-    borderColor: "#ccc",
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '85%',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    alignItems: 'center',
+    gap: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  modalInput: {
+    width: '100%',
     borderWidth: 1,
+    borderColor: '#ccc',
     padding: 10,
-    marginVertical: 10,
-    borderRadius: 6,
+    borderRadius: 30,
+    marginBottom: 25,
+    textAlign: 'center',
+    fontSize: 14,
+    backgroundColor: '#f2f2f2',
+  },
+  smallInput: {
+    flex: 1,
+    marginHorizontal: 5,
+    marginBottom: 0,
+    padding: 10,
+    borderRadius: 20,
+    fontSize: 15,
+    minWidth: 0,
+    width: undefined,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+    width: '100%',
+    gap: 8,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 10,
+  },
+  modalButton: {
+    backgroundColor: '#6381A8',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    flex: 1,
+    marginRight: 5,
+  },
+  cancelButton: {
+    backgroundColor: '#DC3545',
+    marginRight: 0,
+    marginLeft: 5,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

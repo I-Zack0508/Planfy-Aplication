@@ -21,15 +21,18 @@ const TaskCard = ({ id, name, category, time, date, completed, onEdit, onDelete,
         </View>
 
         <View style={styles.buttons}>
-          <TouchableOpacity onPress={onEdit}>
-            <MaterialIcons name="edit" size={24} color="#0a84ff" />
-          </TouchableOpacity>
+          {/* Esconde botão de editar se tarefa estiver concluída */}
+          {!completed && (
+            <TouchableOpacity onPress={onEdit}>
+              <MaterialIcons name="edit" size={24} color="#F7D560" />  {/* amarelo ouro */}
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={onDelete}>
-            <MaterialIcons name="delete" size={24} color="#ff3b30" />
+            <MaterialIcons name="delete" size={24} color="#E5534B" />
           </TouchableOpacity>
           {podeConcluir && (
             <TouchableOpacity onPress={onToggleComplete}>
-              <MaterialIcons name="check-circle" size={24} color="#34c759" />
+              <MaterialIcons name="check-circle" size={24} color="#43B668" />
             </TouchableOpacity>
           )}
         </View>
