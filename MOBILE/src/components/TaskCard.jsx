@@ -46,6 +46,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     padding: 15,
     marginVertical: 20,
+    marginHorizontal: 10,  // <--- Espaço lateral adicionado aqui
     borderLeftWidth: 6,
     borderLeftColor: "#adb8c5",
     borderRadius: 6,
