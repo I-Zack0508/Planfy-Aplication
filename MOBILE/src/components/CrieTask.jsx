@@ -79,6 +79,9 @@ const TaskCreator = ({ onTaskAdded }) => {
           keyboardType="numeric"
           maxLength={2}
         />
+          <Text style={styles.separator}>
+          /
+        </Text>
         <TextInput
           style={[styles.input, styles.smallInput]}
           placeholder="Mês"
@@ -87,6 +90,9 @@ const TaskCreator = ({ onTaskAdded }) => {
           keyboardType="numeric"
           maxLength={2}
         />
+          <Text style={styles.separator}>
+          /
+        </Text>
         <TextInput
           style={[styles.input, styles.smallInput]}
           placeholder="Ano"
@@ -106,6 +112,9 @@ const TaskCreator = ({ onTaskAdded }) => {
           keyboardType="numeric"
           maxLength={2}
         />
+        <Text style={styles.separator}>
+          :
+        </Text>
         <TextInput
           style={[styles.input, styles.smallInput]}
           placeholder="Minutos"
@@ -124,30 +133,30 @@ const TaskCreator = ({ onTaskAdded }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { 
-    padding: 20, 
-    backgroundColor: "#fff", 
-    borderRadius: 16, 
+  container: {
+    padding: 20,
+    backgroundColor: "#fff",
+    borderRadius: 16,
     margin: 16,
     alignSelf: "center",
     width: "90%",
     elevation: 2,
   },
   title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
-  input: { 
-    borderWidth: 1, 
-    borderColor: "#ffffff", 
-    backgroundColor: "#f2f2f2", 
-    padding: 10, 
-    borderRadius: 30, 
-    marginBottom: 25, 
+  input: {
+    borderWidth: 1,
+    borderColor: "#F2F2F2",
+    backgroundColor: "#f2f2f2",
+    padding: 10,
+    borderRadius: 30,
+    marginBottom: 25,
     textAlign: "center",
     fontSize: 14,
     width: "100%",
   },
-  smallInput: { 
+  smallInput: {
     flex: 1, // faz ocupar o espaço disponível
-    marginHorizontal: 5, 
+    marginHorizontal: 5,
     marginBottom: 0,
     padding: 10,
     borderRadius: 20,
@@ -155,10 +164,18 @@ const styles = StyleSheet.create({
     minWidth: 0, // evita overflow
     width: undefined, // remove largura fixa
   },
-  row: { 
-    flexDirection: "row", 
-    justifyContent: "space-between", 
-    alignItems: "center", 
+
+  separator: {
+    fontSize: 24,
+    color: "balck",
+  },
+
+  row: {
+    backgroundColor: "#f2f2f2",
+    borderRadius: 100,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 25,
     width: "100%",
     gap: 8, // se suportado, para espaçamento entre inputs

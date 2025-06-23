@@ -15,7 +15,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Semana from '../../../components/Semana';
 import Header from '../../../components/Header';
 import TaskCard from '../../../components/TaskCard';
-import DogImage from '../../../../assets/Dog.png'; 
+import DogImage from '../../../../assets/Dog.png';
 
 export default function HomeScreen() {
   const [user, setUser] = useState(null);
@@ -201,6 +201,9 @@ export default function HomeScreen() {
                   keyboardType="numeric"
                   maxLength={2}
                 />
+                <Text style={styles.separator}>
+                  /
+                </Text>
                 <TextInput
                   style={[styles.modalInput, styles.smallInput]}
                   placeholder="Mês"
@@ -209,6 +212,9 @@ export default function HomeScreen() {
                   keyboardType="numeric"
                   maxLength={2}
                 />
+                <Text style={styles.separator}>
+                  /
+                </Text>
                 <TextInput
                   style={[styles.modalInput, styles.smallInput]}
                   placeholder="Ano"
@@ -228,6 +234,9 @@ export default function HomeScreen() {
                   keyboardType="numeric"
                   maxLength={2}
                 />
+                <Text style={styles.separator}>
+                  :
+                </Text>
                 <TextInput
                   style={[styles.modalInput, styles.smallInput]}
                   placeholder="Minutos"
@@ -288,7 +297,7 @@ const styles = StyleSheet.create({
   modalInput: {
     width: '100%',
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: '#f2f2f2',
     padding: 10,
     borderRadius: 30,
     marginBottom: 25,
@@ -307,12 +316,14 @@ const styles = StyleSheet.create({
     width: undefined,
   },
   row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    backgroundColor: "#f2f2f2",
+    borderRadius: 100,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 25,
-    width: '100%',
-    gap: 8,
+    width: "100%",
+    gap: 8, // se suportado, para espaçamento entre inputs
   },
   modalButtons: {
     flexDirection: 'row',
@@ -352,5 +363,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#999',
     fontStyle: 'italic',
+  },
+  
+  separator: {
+    fontSize: 24,
+    color: "balck",
   },
 });
