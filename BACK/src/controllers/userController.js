@@ -92,3 +92,22 @@ exports.updateProfilePic = async (req, res) => {
         res.status(500).json({ message: 'Erro ao salvar imagem.' });
     }
 };
+
+exports.deleteUser = async (req, res) => {
+  const { password } = req.body;
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.userId } });
+    if (!user) return res.status(404).json({ error: 'Usuário não encontrado' });
+
+    const senhaConfere = await bcrypt.compare(password, user.password);
+    if (!senhaConfere) return res.status(401).json({ error: 'Senha incorreta' });
+
+    // Exclui todas as tarefas do usuário antes de excluir o usuário
+    await prisma.task.deleteMany({ where: { userId: req.userId } });
+
+    await prisma.user.delete({ where: { id: req.userId } });
+    res.json({ message: 'Conta excluída com sucesso' });
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao excluir conta' });
+  }
+};

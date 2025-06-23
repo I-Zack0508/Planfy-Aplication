@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { router } from 'expo-router';
-import { Modal, StyleSheet, Text, View, TextInput, TouchableOpacity } from "react-native";
+import { Modal, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function InfoPerfil() {
@@ -10,6 +10,12 @@ export default function InfoPerfil() {
     const [fieldValue, setFieldValue] = useState("");
     const [currentPassword, setCurrentPassword] = useState("");
     const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
+
+    // Estado para exclusão de conta
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deletePassword1, setDeletePassword1] = useState("");
+    const [deletePassword2, setDeletePassword2] = useState("");
+    const [deleting, setDeleting] = useState(false);
 
     useEffect(() => {
         async function fetchUser() {
@@ -27,8 +33,8 @@ export default function InfoPerfil() {
         setModalVisible(true);
     };
 
-    const handleSave = () => {
-        console.log(`Campo ${selectedField} atualizado para: ${fieldValue}`);
+    const handleSave = async () => {
+        await updateUserData(selectedField, fieldValue, currentPassword);
         setModalVisible(false);
     };
 
@@ -37,6 +43,84 @@ export default function InfoPerfil() {
         await AsyncStorage.removeItem('user');
         setLogoutConfirmVisible(false);
         router.replace('/'); // Redireciona para a tela de login
+    };
+
+    const updateUserData = async (field, value, currentPassword = "") => {
+        try {
+            const token = await AsyncStorage.getItem('token');
+            let url = "http://localhost:3000/api/user/profile";
+            let body = {};
+
+            if (field === "Nome") {
+                body = { name: value };
+            } else if (field === "Email") {
+                body = { email: value };
+            } else if (field === "Senha") {
+                url = "http://localhost:3000/api/user/password";
+                body = { currentPassword, newPassword: value };
+            }
+
+            const response = await fetch(url, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify(body),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Atualiza o AsyncStorage se não for senha
+                if (field !== "Senha") {
+                    const userData = await AsyncStorage.getItem('user');
+                    let userObj = userData ? JSON.parse(userData) : {};
+                    if (field === "Nome") userObj.nome = value;
+                    if (field === "Email") userObj.email = value;
+                    await AsyncStorage.setItem('user', JSON.stringify(userObj));
+                    setUser(userObj);
+                }
+                alert("Dados atualizados com sucesso!");
+            } else {
+                alert(data.error || data.message || "Erro ao atualizar dados");
+            }
+        } catch (e) {
+            alert("Erro ao atualizar dados");
+        }
+    };
+
+    // Função para excluir conta
+    const handleDeleteAccount = async () => {
+        if (deletePassword1 !== deletePassword2) {
+            Alert.alert("Erro", "As senhas não coincidem.");
+            return;
+        }
+        setDeleting(true);
+        try {
+            const token = await AsyncStorage.getItem('token');
+            const response = await fetch("http://localhost:3000/api/user/delete", {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ password: deletePassword1 }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                await AsyncStorage.removeItem('token');
+                await AsyncStorage.removeItem('user');
+                setDeleteModalVisible(false);
+                Alert.alert("Conta excluída", "Sua conta foi excluída com sucesso.");
+                router.replace('/');
+            } else {
+                Alert.alert("Erro", data.error || data.message || "Erro ao excluir conta");
+            }
+        } catch (e) {
+            Alert.alert("Erro", "Erro ao excluir conta");
+        }
+        setDeleting(false);
     };
 
     if (!user) {
@@ -58,9 +142,6 @@ export default function InfoPerfil() {
                         <Text style={styles.edit}>Editar</Text>
                     </TouchableOpacity>
                 </View>
-
-       
-
                 <View style={styles.item}>
                     <Text style={styles.text}>
                         <Text style={styles.bold}>Email:</Text> {user.email}
@@ -70,18 +151,25 @@ export default function InfoPerfil() {
                     </TouchableOpacity>
                 </View>
             </View>
-
-                     <View style={styles.item}>
-                    <Text style={styles.text}>
-                        <Text style={styles.bold}>Senha:</Text> ********
-                    </Text>
-                    <TouchableOpacity onPress={() => handleEdit("Senha", "")}>
-                        <Text style={styles.edit}>Editar</Text>
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.item}>
+                <Text style={styles.text}>
+                    <Text style={styles.bold}>Senha:</Text> ********
+                </Text>
+                <TouchableOpacity onPress={() => handleEdit("Senha", "")}>
+                    <Text style={styles.edit}>Editar</Text>
+                </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={styles.exit} onPress={() => setLogoutConfirmVisible(true)}>
                 <Text style={[styles.textExit, styles.bold]}>Sair da Conta</Text>
+            </TouchableOpacity>
+
+            {/* Botão de excluir conta */}
+            <TouchableOpacity
+                style={[styles.exit, { marginTop: 10 }]}
+                onPress={() => setDeleteModalVisible(true)}
+            >
+                <Text style={[styles.textExit, styles.bold, { color: "#c00" }]}>Excluir Conta</Text>
             </TouchableOpacity>
 
             {/* Modal para edição */}
@@ -140,13 +228,62 @@ export default function InfoPerfil() {
                         <View style={styles.modalButtons}>
                             <TouchableOpacity
                                 style={styles.modalButton}
-                                onPress={handleLogout} // <-- Chama o logout aqui
+                                onPress={handleLogout}
                             >
                                 <Text style={styles.modalButtonText}>Sim</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={[styles.modalButton, styles.cancelButton]}
                                 onPress={() => setLogoutConfirmVisible(false)}
+                            >
+                                <Text style={styles.modalButtonText}>Cancelar</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+
+            {/* Modal de confirmação de exclusão de conta */}
+            <Modal
+                transparent={true}
+                visible={deleteModalVisible}
+                animationType="fade"
+                onRequestClose={() => setDeleteModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Excluir Conta</Text>
+                        <Text style={{ marginBottom: 10, textAlign: "center" }}>
+                            Digite sua senha duas vezes para confirmar a exclusão da conta.
+                        </Text>
+                        <TextInput
+                            style={styles.modalInput}
+                            placeholder="Digite sua senha"
+                            secureTextEntry={true}
+                            value={deletePassword1}
+                            onChangeText={setDeletePassword1}
+                        />
+                        <TextInput
+                            style={styles.modalInput}
+                            placeholder="Confirme sua senha"
+                            secureTextEntry={true}
+                            value={deletePassword2}
+                            onChangeText={setDeletePassword2}
+                        />
+                        <View style={styles.modalButtons}>
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={handleDeleteAccount}
+                                disabled={deleting}
+                            >
+                                <Text style={styles.modalButtonText}>
+                                    {deleting ? "Excluindo..." : "Excluir"}
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton]}
+                                onPress={() => setDeleteModalVisible(false)}
+                                disabled={deleting}
                             >
                                 <Text style={styles.modalButtonText}>Cancelar</Text>
                             </TouchableOpacity>

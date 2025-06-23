@@ -1,10 +1,21 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, Modal, TextInput, TouchableOpacity, Alert } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  Modal,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  Image,
+} from 'react-native';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Semana from '../../../components/Semana';
 import Header from '../../../components/Header';
 import TaskCard from '../../../components/TaskCard';
+import DogImage from '../../../../assets/Dog.png'; 
 
 export default function HomeScreen() {
   const [user, setUser] = useState(null);
@@ -12,7 +23,6 @@ export default function HomeScreen() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
 
-  // Estados separados pra editar data/hora igual TaskCreator
   const [editTaskData, setEditTaskData] = useState({
     id: null,
     name: "",
@@ -75,7 +85,6 @@ export default function HomeScreen() {
   };
 
   const handleEditTask = (task) => {
-    // Quebra data e hora para preencher os inputs separados
     const [year, month, day] = task.date.slice(0, 10).split("-");
     const [hour, minute] = task.time.split(":");
 
@@ -144,9 +153,10 @@ export default function HomeScreen() {
         <View style={{ marginTop: 20 }}>
           {selectedDate ? (
             filteredTasks.length === 0 ? (
-              <Text style={{ color: "#888", textAlign: "center" }}>
-                Nenhuma tarefa para este dia.
-              </Text>
+              <View style={styles.emptyContainer}>
+                <Image source={DogImage} style={styles.dogImage} resizeMode="contain" />
+                <Text style={styles.emptyText}>Nenhuma tarefa por aqui</Text>
+              </View>
             ) : (
               filteredTasks.map(task => (
                 <TaskCard
@@ -165,7 +175,6 @@ export default function HomeScreen() {
           )}
         </View>
 
-        {/* Modal de Edição */}
         <Modal
           animationType="none"
           transparent={true}
@@ -183,7 +192,6 @@ export default function HomeScreen() {
                 placeholder="Nome da tarefa"
               />
 
-              {/* Data inputs em linha, igual no TaskCreator */}
               <View style={styles.row}>
                 <TextInput
                   style={[styles.modalInput, styles.smallInput]}
@@ -211,7 +219,6 @@ export default function HomeScreen() {
                 />
               </View>
 
-              {/* Hora inputs em linha */}
               <View style={styles.row}>
                 <TextInput
                   style={[styles.modalInput, styles.smallInput]}
@@ -329,5 +336,21 @@ const styles = StyleSheet.create({
   modalButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 30,
+    paddingHorizontal: 20,
+  },
+  dogImage: {
+    width: 160,
+    height: 160,
+    marginBottom: 10,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });
